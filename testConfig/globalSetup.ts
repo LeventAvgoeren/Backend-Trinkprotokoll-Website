@@ -24,6 +24,5 @@ export default async function globalSetup() {
     const instance = await MongoMemoryServer.create();
     const uri = instance.getUri();
     (global as any).__MONGOINSTANCE = instance;
-    // await mongoose.connect(uri);
     process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
 }

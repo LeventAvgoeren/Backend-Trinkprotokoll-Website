@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Web Engineering 2, Blatt 07",
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "tsc && jest --runInBand",
     "build": "tsc",
     "clean": "rimraf dist coverage junit.xml abgabe*.zip all.log",
     "abgabe": "ziplocalgit zip -f abgabe_Blatt_07.zip",
