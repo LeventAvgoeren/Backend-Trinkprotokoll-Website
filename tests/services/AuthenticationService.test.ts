@@ -8,7 +8,6 @@ import { createPfleger } from "../../src/services/PflegerService"
 let pflegerLevent: HydratedDocument<IPfleger>
 let pflegerHanz: HydratedDocument<IPfleger>
 let pflegerKevin: HydratedDocument<IPfleger>
-let a
 
 beforeEach(async () => {
     

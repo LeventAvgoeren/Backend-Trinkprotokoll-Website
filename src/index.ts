@@ -10,8 +10,6 @@ import { logger } from "./logger"
 import { readFile } from "fs/promises";
 
 async function setup() {
-
-
     let mongodURI = process.env.DB_CONNECTION_STRING;
     if (!mongodURI) {
         logger.error('Cannot start, no database configured. Set environment variable DB_CONNECTION_STRING. Use "memory" for MongoMemoryServer');
@@ -23,15 +21,11 @@ async function setup() {
         const mongo = await MMS.MongoMemoryServer.create();
         mongodURI = mongo.getUri();
     }
-
     logger.info(`Connect to mongod at ${mongodURI}`)
     await mongoose.connect(mongodURI);
-
     const port = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000;
-
     const useSSL = process.env.USE_SSL === 'true';
     const httpsPort = parseInt(process.env.HTTPS_PORT!);
-
     if (useSSL) {
         const [privateSSLKey, publicSSLCert] = await Promise.all([
         readFile(process.env.SSL_KEY_FILE!),
@@ -46,8 +40,6 @@ async function setup() {
         httpServer.listen(port, () => {
         logger.info(`Listening for HTTP at http://localhost:${process.env.HTTP_PORT}`);
     }
-    
-
 )};
 }
 setup();

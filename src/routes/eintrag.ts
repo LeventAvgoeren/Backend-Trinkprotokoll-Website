@@ -15,7 +15,7 @@ eintragRouter.get("/:id",param("id").isMongoId(), async (req, res, next) => {
         let eintrag = await getEintrag(id);
         res.status(200).send(eintrag); // 200->OK
     } catch (err) {
-        res.status(404); //Resource gibt es nicht
+        res.status(400); //Resource gibt es nicht
         next(err);
     }
 })
@@ -39,7 +39,7 @@ eintragRouter.post("/",
             res.status(201).send(erstellterEintrag) //201 Created
         }
         catch (err) {
-            res.status(404) //Anfrage ist fehlerhaft
+            res.status(400) //Anfrage ist fehlerhaft
             next(err)
         }
     })
@@ -85,7 +85,7 @@ eintragRouter.put("/:id",
 
         }
         catch (err) {
-            res.status(404)
+            res.status(400)
             next(err)
         }
     })
@@ -101,7 +101,7 @@ eintragRouter.delete("/:id",param("id").isMongoId(), async (req, res, next) => {
         res.status(204).send(deleted) //Keine rückmeldung
     }
     catch (err) {
-        res.status(404).send(err)
+        res.status(400).send(err)
         next(err)
     }
 })

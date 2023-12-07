@@ -14,7 +14,7 @@ pflegerRouter.get("/alle", async (req, res, next) => {
         res.status(200).send(pfleger); // 200->OK
     }
     catch (err) {
-        res.status(404)
+        res.status(400)
     }
 })
 
@@ -37,7 +37,7 @@ pflegerRouter.post("/",
             res.status(201).send(erstellterPfleger) //201 Created
         }
         catch (err) {
-            res.status(404) //Anfrage ist fehlerhaft
+            res.status(400) //Anfrage ist fehlerhaft
             next(err)
         }
     })
@@ -81,7 +81,7 @@ pflegerRouter.put("/:id",
 
         }
         catch (err) {
-            res.status(404)
+            res.status(400)
             next(err)
         }
     })
@@ -97,7 +97,7 @@ pflegerRouter.delete("/:id",param("id").isMongoId(), async (req, res, next) => {
         res.status(204).send(status)
     }
     catch (err) {
-        res.status(404)
+        res.status(400)
         next(err)
     }
 })

@@ -56,7 +56,7 @@ expect(result).not.toHaveProperty("password")
 test("pfleger löschen mit fakeId DELETE",async ()=>{
     let fakeId= new Types.ObjectId()
     let result=await supertest(app).delete(`/api/pfleger/${fakeId}`)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("pfleger erstellen mit fehlenden angaben DELETE",async ()=>{
     let fakeId= new Types.ObjectId().toString()
@@ -67,7 +67,7 @@ test("pfleger erstellen mit fehlenden angaben DELETE",async ()=>{
         admin:false,
     }
     let result=await supertest(app).delete(`/api/pfleger/${pflegerUpdatet.id}`)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("pfleger updaten mit fehlenden pw POST",async ()=>{
     

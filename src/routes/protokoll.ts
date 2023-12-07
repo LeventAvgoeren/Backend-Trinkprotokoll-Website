@@ -29,7 +29,7 @@ protokollRouter.get("/alle", async (req, res, next) => {
         res.status(200).send(protkoll);
     }
     catch (err) {
-        res.status(404)
+        res.status(400)
     }
 })
 
@@ -45,7 +45,7 @@ protokollRouter.get("/:id", param("id").isMongoId(), async (req, res, next) => {
         let protokoll = await getProtokoll(id);
         res.status(200).send(protokoll); // 200->OK
     } catch (err) {
-        res.status(404); //Resource gibt es nicht
+        res.status(400); //Resource gibt es nicht
         next(err);
     }
 })
@@ -70,7 +70,7 @@ protokollRouter.post("/",
             res.status(201).send(erstelltesProtokoll)
         }
         catch (err) {
-            res.status(404)
+            res.status(400)
             next(err)
         }
 
@@ -121,7 +121,7 @@ protokollRouter.put("/:id",
             res.status(200).send(updatet)
         }
         catch (err) {
-            res.status(404)
+            res.status(400)
             next(err)
         }
     })
@@ -139,7 +139,7 @@ protokollRouter.delete("/:id", param("id").isMongoId(), async (req, res, next) =
         res.status(204).send(status) //Keine rückmeldung
     }
     catch (err) {
-        res.status(404)
+        res.status(400)
         next(err)
     }
 })

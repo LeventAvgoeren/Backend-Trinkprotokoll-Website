@@ -83,18 +83,18 @@ test("Protokoll updaten PUT",async ()=>{
 test("Protokoll get mit fakeId GET",async ()=>{
   let fakeid=new Types.ObjectId().toString()
   let result=await supertest(app).get(`/api/protokoll/${fakeid}`);
-  expect(result.statusCode).toBe(404)
+  expect(result.statusCode).toBe(400)
 })
 test("Protokoll updaten mit fakeId PUT",async ()=>{
     let fakeid=new Types.ObjectId().toString()
     let johnProtokoll:ProtokollResource={id:fakeid,patient:"john",datum: dateToString(new Date()),public:false,closed:false,ersteller:pflegerAhmad.id,erstellerName:"ligma",updatedAt:dateToString(new Date()),gesamtMenge:0}
     let result= await supertest(app).put(`/api/protokoll/${johnProtokoll.id}`).send(johnProtokoll)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("Protokoll löschen mit fakeId DELTE",async ()=>{
     let fakeid=new Types.ObjectId().toString()
     let result=await supertest(app).delete(`/api/protokoll/${fakeid}`)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("Protokoll erstellen Error POST",async ()=>{
     let johnProtokoll:ProtokollResource={patient:"john",datum: dateToString(new Date()),public:false,closed:false,ersteller:pflegerLevent.id,erstellerName:"john",updatedAt:dateToString(new Date()),gesamtMenge:0}
@@ -104,7 +104,7 @@ test("Protokoll erstellen Error POST",async ()=>{
 test("Protokoll getAlle Error test GET",async ()=>{
     let fakeid=new Types.ObjectId().toString()
     let result=await supertest(app).get(`/api/protokoll/${fakeid}`);
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 
 test("Protokoll mit unterschiedlichen id PUT",async ()=>{
@@ -134,6 +134,6 @@ test("Protokoll erstellen Error POST",async ()=>{
         updatedAt:dateToString(new Date()),
         gesamtMenge:0}
     let result=await supertest(app).post(`/api/protokoll`).send(johnProtokoll)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 

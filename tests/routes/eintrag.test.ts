@@ -96,7 +96,7 @@ test("Eintrag erstellen POST ",async()=>{
 test("getEintrag mit fakeid GET",async ()=>{
     let fakeid=new Types.ObjectId().toString()
     let result=await supertest(app).get(`/api/eintrag/${fakeid}`);
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("updateEintrag mit fakeid PUT",async ()=>{
     let fakeid=new Types.ObjectId().toString()
@@ -109,12 +109,12 @@ test("updateEintrag mit fakeid PUT",async ()=>{
           erstellerName:pflegerLevent.name,
           protokoll:protkollLevent.id}
           let result= await supertest(app).put(`/api/eintrag/${updatetEintrag.id}`).send(updatetEintrag)
-        expect(result.statusCode).toBe(404)
+        expect(result.statusCode).toBe(400)
 })
 test("eintrag löschen mit fakeid DELETE",async ()=>{
     let fakeid=new Types.ObjectId().toString()
     let result=await supertest(app).delete(`/api/eintrag/${fakeid}`);
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("Eintrag updaten PUT", async () => {
     let updatetEintrag: EintragResource = {  
@@ -144,7 +144,7 @@ test("Eintrag updaten fehler PUT", async () => {
         protokoll: protkollLevent.id
     };
     let result = await supertest(app).put(`/api/eintrag/${updatetEintrag.id}`).send(updatetEintrag); 
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 });
 
 test("Eintrag erstellen POST ",async()=>{
@@ -156,7 +156,7 @@ test("Eintrag erstellen POST ",async()=>{
     protokoll:protkollLevent.id}
     
     let result=await supertest(app).post(`/api/eintrag`).send(johnEintrag)
-    expect(result.statusCode).toBe(404)
+    expect(result.statusCode).toBe(400)
 })
 test("updateEintrag mit unterschiedlich  PUT",async ()=>{
     let fakeid=new Types.ObjectId().toString()
