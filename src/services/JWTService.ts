@@ -10,7 +10,7 @@ export async function verifyPasswordAndCreateJWT(name: string, password: string)
     let time = process.env.JWT_TTL 
     let newTime
    if(time!==undefined){
-    newTime=Number(time)*1000
+    newTime=parseInt(time)*1000
    }
     
     if (!secret || !time) {

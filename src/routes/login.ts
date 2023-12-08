@@ -20,7 +20,8 @@ loginRouter.post("/",
         try {
             let log = matchedData(req) 
             let createJWT = await verifyPasswordAndCreateJWT(log.name,log.password)
-            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none"})
+            //Vom professor hilfe bekommen wegen exp
+            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none",expires:log.exp+300})
             res.sendStatus(201).send(createJWT)
         }
         catch (err) {
@@ -31,7 +32,7 @@ loginRouter.post("/",
 
 loginRouter.get("/", async (req, res, next) => {
     try {
-        const jwtString = req.cookies.access_token
+        const jwtString = req.cookies.access.token(req)
 
         if(!jwtString){
             res.sendStatus(400).send(false)

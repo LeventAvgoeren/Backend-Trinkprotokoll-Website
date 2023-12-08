@@ -29,8 +29,8 @@ test(" verifyJWT kein string",()=>{
     process.env.JWT_SECRET = "LEVENTSgeheimnis21!";
 
     expect(()=>verifyJWT("")).toThrow("jwt ist kein string")
-        //expect(String(err)).toBe("Error: jwt ist kein string")
-       // expect(err).toStrictEqual(new Error("jwt ist kein string"))
+    //expect(String(err)).toBe("Error: jwt ist kein string")
+    // expect(err).toStrictEqual(new Error("jwt ist kein string"))
 
     
 
