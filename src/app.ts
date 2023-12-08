@@ -11,12 +11,12 @@ const app = express();
 
 // Middleware:
 app.use('*', express.json()) // vgl. Folie 138
-
+app.use(cookieParser());
 // Routes
 app.use("/api/login",loginRouter)   
 app.use("/api/pfleger",pflegerRouter);
 app.use("/api/protokoll",protokollRouter);
 app.use("/api/eintrag",eintragRouter);
-app.use(cookieParser());
+
 
 export default app;

@@ -1,7 +1,7 @@
 // must be imported before any other imports
 import dotenv from "dotenv";
 dotenv.config();
-
+import "restmatcher";
 import { parseCookies } from "restmatcher";
 import supertest from "supertest";
 import app from "../../src/app";
@@ -20,7 +20,7 @@ test(`/api/login POST, Positivtest`, async () => {
     expect(response).statusCode("2*")
 
     // added by parseCookies, similar to express middleware cookieParser
-    expect(response).toHaveProperty("cookies"); // added by parseCookies
+    expect(response).toHaveProperty("cookies"); // adsded by parseCookies
     expect(response.cookies).toHaveProperty("access_token"); // the cookie with the JWT
     const token = response.cookies.access_token;
     expect(token).toBeDefined();
@@ -32,3 +32,11 @@ test(`/api/login POST, Positivtest`, async () => {
     expect(rawCookie?.sameSite).toBe("None");
     expect(rawCookie?.secure).toBe(true);
  });
+
+ test("login",async () => {
+    const loginData = { name: "John", password: 1233 };
+    let result=await supertest(app).post(`/api/login`).send(loginData)
+    expect(result).toHaveValidationErrorsExactly({ status: "400", body: "password" })
+
+})
+

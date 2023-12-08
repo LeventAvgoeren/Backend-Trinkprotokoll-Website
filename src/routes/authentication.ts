@@ -19,10 +19,11 @@ declare global {
 export function requiresAuthentication(req: Request, res: Response, next: NextFunction) {
     req.body.id=undefined
     try{
-        let jwtString=req.cookies.access_token(req)
+        let jwtString=req.cookies.access_token
         let pflegerId=verifyJWT(jwtString)
         if(pflegerId){
-            req.body.id=pflegerId.id
+            req.body.id  =pflegerId.id
+            req.body.role=pflegerId.role
         }
         next();
     }
@@ -36,7 +37,7 @@ export function requiresAuthentication(req: Request, res: Response, next: NextFu
 export function optionalAuthentication(req: Request, res: Response, next: NextFunction) {
     req.body.id=undefined
     try{
-        let jwtString=req.cookies.access_token(req)
+        let jwtString=req.cookies.access_token
         let pflegerId=verifyJWT(jwtString)
         if(pflegerId){
             if(pflegerId.exp===0){

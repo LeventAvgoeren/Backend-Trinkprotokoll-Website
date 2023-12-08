@@ -43,6 +43,7 @@ export async function verifyPasswordAndCreateJWT(name: string, password: string)
 export function verifyJWT(jwtString: string | undefined): LoginResource {
     const secret = process.env.JWT_SECRET;
     const time = process.env.JWT_TTL //300 sekunden
+    let holder
     if (!secret || !time) {
         throw  Error("variablen nicht gesetzt")
     }
@@ -59,10 +60,9 @@ export function verifyJWT(jwtString: string | undefined): LoginResource {
                 role: payload.role,
                 exp: payload.exp!
             }
-            return loginRes
-        } else {
-            throw Error("jwt ist kein objekt")
-        }
+            holder=loginRes
+        } 
+        return holder!
     }
     catch (err) {
         throw err

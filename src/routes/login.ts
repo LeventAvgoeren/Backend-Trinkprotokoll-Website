@@ -14,7 +14,7 @@ loginRouter.post("/",
         const time = process.env.JWT_TTL //300 sekunden
 
         let error = validationResult(req)
-        if (!error.isEmpty) {
+        if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })
         }
         try {
@@ -25,14 +25,14 @@ loginRouter.post("/",
             res.sendStatus(201).send(createJWT)
         }
         catch (err) {
-            res.sendStatus(400)
+            res.sendStatus(400) 
             next(err)
         }
     })
 
 loginRouter.get("/", async (req, res, next) => {
     try {
-        const jwtString = req.cookies.access.token(req)
+        const jwtString = req.cookies.access_token;
 
         if(!jwtString){
             res.sendStatus(400).send(false)
@@ -48,7 +48,9 @@ loginRouter.get("/", async (req, res, next) => {
     }
 })
 
-loginRouter.delete("/", async (req, res,) => {
-     res.clearCookie("access_token")
-     res.sendStatus(204)
+loginRouter.delete("/", async (req, res,next) => {
+        //const jwtString = req.cookies.access_token;
+        res.clearCookie('access_token')
+        res.sendStatus(204)
+    
 })
