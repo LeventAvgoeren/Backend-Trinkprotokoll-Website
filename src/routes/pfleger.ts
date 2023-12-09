@@ -4,11 +4,12 @@ import { createPfleger, deletePfleger, getAllePfleger, updatePfleger } from "../
 import { PflegerResource } from "../Resources";
 import { body, matchedData, param, validationResult } from "express-validator";
 import { getAlleProtokolle } from "../services/ProtokollService";
+import { optionalAuthentication, requiresAuthentication } from "./authentication";
 
 
 export const pflegerRouter = express.Router();
 
-pflegerRouter.get("/alle", async (req, res, next) => {
+pflegerRouter.get("/alle", optionalAuthentication,async (req, res, next) => {
     try {
         let pfleger = await getAllePfleger();
         res.status(200).send(pfleger); // 200->OK
@@ -19,7 +20,7 @@ pflegerRouter.get("/alle", async (req, res, next) => {
 })
 
 //TODO:VALIDIEREN
-pflegerRouter.post("/",
+pflegerRouter.post("/",requiresAuthentication,
     body("name").isString().isLength({ min: 1, max: 100 }),
     body("admin").optional().isBoolean(),
     body("password").isString().isStrongPassword().isLength({ min: 1, max: 100 }),
@@ -43,7 +44,7 @@ pflegerRouter.post("/",
     })
     
 //TODO:VALIDIEREN
-pflegerRouter.put("/:id",
+pflegerRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
     param("id").isMongoId(),
     body("name").isString().isLength({ min: 1, max: 100 }),
@@ -70,7 +71,7 @@ pflegerRouter.put("/:id",
                 value: body
             }
         ];
-        if (id !== body) {
+        if (id !== req.pflegerId) {
             return res.status(400).json({ errors });
         }
     
@@ -86,7 +87,7 @@ pflegerRouter.put("/:id",
         }
     })
 
-pflegerRouter.delete("/:id",param("id").isMongoId(), async (req, res, next) => {
+pflegerRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), async (req, res, next) => {
     let id = req.params!.id
     let error= validationResult(req)
     if (!error.isEmpty()) {

@@ -2,10 +2,11 @@ import express from "express";
 import { createEintrag, deleteEintrag, getAlleEintraege, getEintrag, updateEintrag } from "../services/EintragService";
 import { EintragResource } from "../Resources";
 import { body, matchedData, param, validationResult } from "express-validator";
+import { optionalAuthentication, requiresAuthentication } from "./authentication";
 
 export const eintragRouter = express.Router();
 
-eintragRouter.get("/:id",param("id").isMongoId(), async (req, res, next) => {
+eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (req, res, next) => {
     let id = req.params!.id
     let error=validationResult(req)
     if (!error.isEmpty()) {
@@ -20,7 +21,7 @@ eintragRouter.get("/:id",param("id").isMongoId(), async (req, res, next) => {
     }
 })
 
-eintragRouter.post("/",
+eintragRouter.post("/",requiresAuthentication,
     body("getraenk").isString().isLength({ min: 1, max: 100 }),
     body("menge").isNumeric(),
     body("kommentar").optional().isString().isLength({ min: 1, max: 1000 }),
@@ -44,7 +45,7 @@ eintragRouter.post("/",
         }
     })
 
-eintragRouter.put("/:id",
+eintragRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
     param("id").isMongoId(),
     body("getraenk").isString().isLength({ min: 1, max: 100 }),
@@ -75,7 +76,7 @@ eintragRouter.put("/:id",
                 value: body
             }
         ];
-        if (id !== body) {
+        if (id !== req.pflegerId) {
             return res.status(400).json({ errors });
         }
         try {
@@ -90,7 +91,7 @@ eintragRouter.put("/:id",
         }
     })
     
-eintragRouter.delete("/:id",param("id").isMongoId(), async (req, res, next) => {
+eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), async (req, res, next) => {
     let id = req.params!.id
      let error=validationResult(req)
         if (!error.isEmpty()) {

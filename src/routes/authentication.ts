@@ -17,14 +17,15 @@ declare global {
 }
 
 export function requiresAuthentication(req: Request, res: Response, next: NextFunction) {
-    req.body.id=undefined
+    req.pflegerId=undefined
     try{
-        let jwtString=req.cookies.access_token
-        let pflegerId=verifyJWT(jwtString)
-        if(pflegerId){
-            req.body.id  =pflegerId.id
-            req.body.role=pflegerId.role
+        let jwtString=req.cookies.access_token//hier ist der fehler 
+        if(!jwtString){
+            res.sendStatus(401)
         }
+        let pfleger=verifyJWT(jwtString)
+        req.pflegerId=pfleger.id
+        req.role=pfleger.role
         next();
     }
     catch(err){
@@ -35,15 +36,15 @@ export function requiresAuthentication(req: Request, res: Response, next: NextFu
 }
 
 export function optionalAuthentication(req: Request, res: Response, next: NextFunction) {
-    req.body.id=undefined
+    req.pflegerId=undefined
     try{
         let jwtString=req.cookies.access_token
-        let pflegerId=verifyJWT(jwtString)
-        if(pflegerId){
-            if(pflegerId.exp===0){
+        let pfleger=verifyJWT(jwtString)
+        if(pfleger){
+            if(pfleger.exp===0){
                 res.sendStatus(401)
             }
-            req.body.id=pflegerId.id
+            req.pflegerId=pfleger.id
         }
         next();
     }

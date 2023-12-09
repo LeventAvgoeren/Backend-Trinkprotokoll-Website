@@ -4,11 +4,12 @@ import { createProtokoll, deleteProtokoll, getAlleProtokolle, getProtokoll, upda
 import { ProtokollResource } from "../Resources";
 import { Types } from "mongoose";
 import { body, matchedData, param, validationResult } from "express-validator";
+import { optionalAuthentication, requiresAuthentication } from "./authentication";
 
 
 export const protokollRouter = express.Router();
 //TODO:VALIDIEREN
-protokollRouter.get("/:id/eintraege", param("id").isMongoId(), async (req, res, next) => {
+protokollRouter.get("/:id/eintraege", optionalAuthentication,param("id").isMongoId(), async (req, res, next) => {
     let error = validationResult(req)
     if (!error.isEmpty()) {
         res.status(400).json({ errors: error.array() })
@@ -23,7 +24,7 @@ protokollRouter.get("/:id/eintraege", param("id").isMongoId(), async (req, res, 
     }
 })
 
-protokollRouter.get("/alle", async (req, res, next) => {
+protokollRouter.get("/alle",optionalAuthentication, async (req, res, next) => {
     try {
         let protkoll = await getAlleProtokolle();
         res.status(200).send(protkoll);
@@ -34,7 +35,7 @@ protokollRouter.get("/alle", async (req, res, next) => {
 })
 
 
-protokollRouter.get("/:id", param("id").isMongoId(), async (req, res, next) => {
+protokollRouter.get("/:id",optionalAuthentication, param("id").isMongoId(), async (req, res, next) => {
     let id = req.params!.id
     let error = validationResult(req)
     if (!error.isEmpty()) {
@@ -50,7 +51,7 @@ protokollRouter.get("/:id", param("id").isMongoId(), async (req, res, next) => {
     }
 })
 //TODO:VALIDIEREN
-protokollRouter.post("/",
+protokollRouter.post("/",requiresAuthentication,
     body("patient").isString().isLength({ min: 1, max: 100 }),
     body("public").optional().isBoolean(),
     body("closed").optional().isBoolean(),
@@ -77,7 +78,7 @@ protokollRouter.post("/",
     })
 
 //TODO:VALIDIEREN
-protokollRouter.put("/:id",
+protokollRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
     param("id").isMongoId(),
     body("patient").isString().isLength({ min: 1, max: 100 }),
@@ -97,6 +98,8 @@ protokollRouter.put("/:id",
 
         let id = req.params!.id;
         let body = req.body.id as ProtokollResource
+        let verId=req.pflegerId
+        let erstellerID=req.body.ersteller
         const errors = [
             {
                 msg: "params id und body id ungleich",
@@ -111,7 +114,8 @@ protokollRouter.put("/:id",
                 value: body
             }
         ];
-        if (id !== body) {
+
+        if (erstellerID!== verId) {
             return res.status(400).json({ errors });
         }
 
@@ -128,7 +132,7 @@ protokollRouter.put("/:id",
 
 
 
-protokollRouter.delete("/:id", param("id").isMongoId(), async (req, res, next) => {
+protokollRouter.delete("/:id",requiresAuthentication, param("id").isMongoId(), async (req, res, next) => {
     let id = req.params!.id
     let error = validationResult(req)
     if (!error.isEmpty()) {

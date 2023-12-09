@@ -68,5 +68,16 @@ export function verifyJWT(jwtString: string | undefined): LoginResource {
         throw err
     }
 }
+//alte variante else bed konnte man nicht testen
+// if (payload instanceof Object) {
+//     let loginRes: LoginResource = {
+//         id: payload.sub!,
+//         role: payload.role,
+//         exp: payload.exp!
+//     }
+//     return loginRes
+// } else {
+//     throw Error("jwt ist kein objekt")
+// }
 
 

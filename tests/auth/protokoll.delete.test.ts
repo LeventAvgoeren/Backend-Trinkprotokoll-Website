@@ -12,14 +12,14 @@ let idBehrens: string
 let idProtokoll: string
 
 beforeEach(async () => {
-    const behrens = await createPfleger({ name: "Hofrat Behrens", password: "geheim1234..!", admin: false })
+    const behrens = await createPfleger({ name: "Hofrat Behrens", password: "Geheim1234..!", admin: false })
     idBehrens = behrens.id!;
     const protokoll = await createProtokoll({ patient: "H. Castorp", datum: `01.11.1912`, ersteller: idBehrens, public: true });
     idProtokoll = protokoll.id!;
 })
 
 test("/api/protokoll DELETE, Positivtest (mit Authentifizierung)", async () => {
-    await performAuthentication("Hofrat Behrens", "geheim1234..!");
+    await performAuthentication("Hofrat Behrens", "Geheim1234..!");
     const testee = supertestWithAuth(app);
     const response = await testee.delete(`/api/protokoll/${idProtokoll}`)
     expect(response).statusCode(204);
