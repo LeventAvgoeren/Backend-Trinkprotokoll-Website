@@ -29,7 +29,7 @@ export function requiresAuthentication(req: Request, res: Response, next: NextFu
         next();
     }
     catch(err){
-        res.sendStatus(401)
+        res.sendStatus(400)
         next(err)
 
     }

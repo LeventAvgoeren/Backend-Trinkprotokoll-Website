@@ -10,6 +10,10 @@ import { optionalAuthentication, requiresAuthentication } from "./authentication
 export const pflegerRouter = express.Router();
 
 pflegerRouter.get("/alle", optionalAuthentication,async (req, res, next) => {
+    let pflegerRolle=req.role
+    if(pflegerRolle===`u`){
+        res.send(401)
+    }
     try {
         let pfleger = await getAllePfleger();
         res.status(200).send(pfleger); // 200->OK
@@ -30,7 +34,10 @@ pflegerRouter.post("/",requiresAuthentication,
         if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })
         }
-
+        let pflegerRolle=req.role
+        if(pflegerRolle===`u`){
+            res.send(401)
+        }
         try {
             //Wenn es keine fehler gab werden alle validierten felder in ein objekt gepackt 
             let pfleger = matchedData(req) as PflegerResource
@@ -54,6 +61,10 @@ pflegerRouter.put("/:id",requiresAuthentication,
         let error = validationResult(req);
         if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })
+        }
+        let pflegerRolle=req.role
+        if(pflegerRolle===`u`){
+            res.send(401)
         }
         const id = req.params!.id;
         let body = req.body.id as PflegerResource
@@ -92,6 +103,10 @@ pflegerRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
     let error= validationResult(req)
     if (!error.isEmpty()) {
         res.status(400).json({ errors: error.array() })
+    }
+    let pflegerRolle=req.role
+    if(pflegerRolle===`u`){
+        res.send(401)
     }
     try {
         let status = await deletePfleger(id)

@@ -6,6 +6,7 @@ import { HydratedDocument } from "mongoose";
 import { IPfleger, Pfleger } from "../../src/model/PflegerModel";
 import { login } from "../../src/services/AuthenticationService";
 import { verifyJWT, verifyPasswordAndCreateJWT } from "../../src/services/JWTService";
+import { performAuthentication, supertestWithAuth } from "../supertestWithAuth";
 
 
 let pflegerLevent: HydratedDocument<IPfleger>
@@ -39,5 +40,14 @@ test("GET kein string",async ()=>{
 
 test("DELETE",async ()=>{
     let result=await supertest(app).delete(`/api/login/`).set('Cookie', [`access_token=${loginLevent}`]);
+    expect(result.statusCode).toBe(204)
+})
+test("POST",async ()=>{
+    await performAuthentication("Levent", "Hallo123!3dadgf")
+    let loginRes={ 
+        name:"Levo",
+        password:"Hallo1241!"
+    }
+    let result=await supertestWithAuth(app).post(`/api/login`).send(loginRes)
     expect(result.statusCode).toBe(204)
 })

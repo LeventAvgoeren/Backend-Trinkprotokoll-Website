@@ -4,6 +4,7 @@ import { EintragResource, LoginResource } from "../Resources";
 import { body, cookie, matchedData, param, validationResult } from "express-validator";
 import { login } from "../services/AuthenticationService";
 import { verifyJWT, verifyPasswordAndCreateJWT } from "../services/JWTService";
+import { optionalAuthentication, requiresAuthentication } from "./authentication";
 
 export const loginRouter = express.Router();
 
