@@ -43,6 +43,11 @@ test("protokoll DELETE",async () => {
     expect(result.statusCode).toBe(204)
     expect(await Protokoll.findOne({id:protkollLevent.id})).toBeNull()
 })
+test("protokoll DELETE OHNE autor",async () => {
+    await performAuthentication("Levent", "HalloWelt123");
+    let result=await supertest(app).delete(`/api/protokoll/${protkollLevent.id}`)
+    expect(result.statusCode).toBe(401)
+})
 test("get mit id GET",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
     let result=await supertestWithAuth(app).get(`/api/protokoll/${protkollLevent.id}`);
@@ -52,11 +57,6 @@ test("get mit id GET",async ()=>{
     expect(result.body.closed).toBeFalsy()
     expect(result.body.ersteller).toBe(pflegerLevent.id)
 
-})
-test("get mit id GET",async ()=>{
-    await performAuthentication("Levent", "HalloWelt123!");
-    let result=await supertestWithAuth(app).get(`/api/protokoll/${protkollAhmad.id}`);
-    expect(result.statusCode).toBe(200)
 })
 test("get mit id GET nicht autorisiert",async ()=>{
     await performAuthentication("Levent", "HalloWelt123");
@@ -68,6 +68,11 @@ test("getAlle GET",async ()=>{
 await performAuthentication("Levent", "HalloWelt123!");
 let result=await supertestWithAuth(app).get(`/api/protokoll/alle`);
 expect(result.statusCode).toBe(200)
+})
+test("getAlle GET OHNE autor",async ()=>{
+    await performAuthentication("Levent", "HalloWelt123");
+    let result=await supertest(app).get(`/api/protokoll/alle`);
+    expect(result.statusCode).toBe(401)
 })
 test("Protokoll erstellen POST",async()=>{
     await performAuthentication("Levent", "HalloWelt123!");
@@ -82,6 +87,12 @@ test("Protokoll erstellen POST",async()=>{
     expect(result.body.closed).toBeFalsy()
     expect(result.body.ersteller).toBe(pflegerLevent.id)
 })
+test("Protokoll erstellen POST OHNE autor",async()=>{
+
+    let johnProtokoll:ProtokollResource={patient:"john",datum: dateToString(new Date()),public:false,closed:false,ersteller:pflegerLevent.id,erstellerName:"john",updatedAt:dateToString(new Date()),gesamtMenge:0}
+    let result=await supertest(app).post(`/api/protokoll`).send(johnProtokoll)
+    expect(result.statusCode).toBe(401)
+})
 
 test("Protokoll updaten PUT",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
@@ -93,6 +104,12 @@ test("Protokoll updaten PUT",async ()=>{
     expect(result.body.public).toBeFalsy()
     expect(result.body.closed).toBeFalsy()
     expect(result.body.ersteller).toBe(pflegerAhmad.id)
+})
+test("Protokoll updaten PUT OHNE autor",async ()=>{
+    let johnProtokoll:ProtokollResource={id:protkollLevent.id,patient:"john",datum: dateToString(new Date()),public:false,closed:false,ersteller:pflegerAhmad.id,erstellerName:"ligma",updatedAt:dateToString(new Date()),gesamtMenge:0}
+    let result= await supertest(app).put(`/api/protokoll/${johnProtokoll.id}`).send(johnProtokoll)
+    expect(result.statusCode).toBe(401)
+
 })
 test("Protokoll get mit fakeId GET",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
