@@ -10,6 +10,7 @@ import { IProtokoll, Protokoll } from "../../src/model/ProtokollModel";
 import { IPfleger, Pfleger } from "../../src/model/PflegerModel";
 import { HydratedDocument } from "mongoose";
 import { Eintrag, IEintrag } from "../../src/model/EintragModel";
+import { performAuthentication, supertestWithAuth } from "../supertestWithAuth";
 let pflegerLevent: HydratedDocument<IPfleger>
 let pflegerAhmad: HydratedDocument<IPfleger>
 let protkollLevent: HydratedDocument<IProtokoll>
@@ -17,7 +18,7 @@ let protkollAhmad: HydratedDocument<IProtokoll>
 let eintragLevent :HydratedDocument<IEintrag>
 let eintragAhmad:HydratedDocument<IEintrag>
 beforeEach(async () => {
-    pflegerLevent= await Pfleger.create({name:"Levent",password:"HalloWelt123",admin:true})
+    pflegerLevent= await Pfleger.create({name:"Levent",password:"HalloWelt123!",admin:true})
     pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123",admin:true})
     await pflegerLevent.save()
     await pflegerAhmad.save()
@@ -65,12 +66,14 @@ beforeEach(async () => {
     await eintragAhmad.save()
 })
 test("protokoll patient kein string PUT validation ",async () => {
+    await performAuthentication("Levent", "HalloWelt123!");
     let noMongo=12334
-    let result=await supertest(app).delete(`/api/eintrag/${noMongo}`)
+    let result=await supertestWithAuth(app).delete(`/api/eintrag/${noMongo}`)
     expect(result).toHaveValidationErrorsExactly({ status: "400",params:"id" })
 })
 
 test("protokoll patient kein string POST validation ",async () => {
+    await performAuthentication("Levent", "HalloWelt123!");
     let johnEintrag={  
         getraenk:true,
         menge:200,
@@ -78,12 +81,13 @@ test("protokoll patient kein string POST validation ",async () => {
         ersteller:pflegerLevent.id,
         erstellerName:pflegerLevent.name,
         protokoll:protkollLevent.id}
-    let result=await supertest(app).post(`/api/eintrag/`).send(johnEintrag)
+    let result=await supertestWithAuth(app).post(`/api/eintrag/`).send(johnEintrag)
     expect(result).toHaveValidationErrorsExactly({ status: "400",body:"getraenk" })
 })
 test("getEintrag GET",async ()=>{
+    await performAuthentication("Levent", "HalloWelt123!");
     let noMongo="12344"
-    let result=await supertest(app).get(`/api/eintrag/${noMongo}`);
+    let result=await supertestWithAuth(app).get(`/api/eintrag/${noMongo}`);
     expect(result).toHaveValidationErrorsExactly({ status: "400",params:"id" })
 
 })

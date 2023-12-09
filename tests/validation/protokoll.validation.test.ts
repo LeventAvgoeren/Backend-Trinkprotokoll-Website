@@ -9,6 +9,7 @@ import app from "../../src/app";
 import { createPfleger } from "../../src/services/PflegerService";
 import { createProtokoll } from "../../src/services/ProtokollService";
 import { dateToString } from "../../src/services/ServiceHelper";
+import { performAuthentication, supertestWithAuth } from "../supertestWithAuth";
 
 let pomfrey: PflegerResource
 let fredsProtokoll: ProtokollResource
@@ -25,12 +26,14 @@ beforeEach(async () => {
 })
 
 test("/api/protokoll GET, ungültige ID", async () => {
-    const testee = supertest(app);
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
+    const testee = supertestWithAuth(app);
     const response = await testee.get(`/api/protokoll/1234`)
 
     expect(response).toHaveValidationErrorsExactly({ status: "400", params: "id" })
 })
 test("/api/protokoll PUT, verschiedene ID (params und body)", async () => {
+    
     const testee = supertest(app);
     // Hint: Gültige ID, aber für ein Protokoll ungültig!
     const invalidProtokollID = pomfrey.id;
@@ -46,6 +49,7 @@ test("/api/protokoll PUT, verschiedene ID (params und body)", async () => {
 });
 
 test("protokoll patient kein string PUT validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let protokollUpdatet={
         id:fredsProtokoll.id,
         patient: 12443, 
@@ -54,10 +58,11 @@ test("protokoll patient kein string PUT validation ",async () => {
         closed: false,
         ersteller: pomfrey.id!
     }
-    let result=await supertest(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
+    let result=await supertestWithAuth(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
     expect(result).toHaveValidationErrorsExactly({ status: "400",body:"patient" })
 })
 test("protokoll public kein boolean PUT validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let protokollUpdatet={
         id:fredsProtokoll.id,
         patient: "levo", 
@@ -66,10 +71,11 @@ test("protokoll public kein boolean PUT validation ",async () => {
         closed: false,
         ersteller: pomfrey.id!
     }
-    let result=await supertest(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
+    let result=await supertestWithAuth(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
     expect(result).toHaveValidationErrorsExactly({ status: "400",body:"public" })
 })
 test("protokoll ersteller keine mongoId PUT validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let protokollUpdatet={
         id:fredsProtokoll.id,
         patient: "levo", 
@@ -78,22 +84,25 @@ test("protokoll ersteller keine mongoId PUT validation ",async () => {
         closed: false,
         ersteller: 123445
     }
-    let result=await supertest(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
+    let result=await supertestWithAuth(app).put(`/api/protokoll/${protokollUpdatet.id}`).send(protokollUpdatet)
     expect(result).toHaveValidationErrorsExactly({ status: "400",body:"ersteller" })
 })
 
 test("protokoll URL keine mongoId DELETE validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
 let noMongo="12133"
-    let result=await supertest(app).delete(`/api/protokoll/${noMongo}`)
+    let result=await supertestWithAuth(app).delete(`/api/protokoll/${noMongo}`)
     expect(result).toHaveValidationErrorsExactly({ status: "400",params:"id" })
 })
 
 test("protokoll URL keine mongoId GET validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
 let noMongo="12133"
-    let result=await supertest(app).get(`/api/protokoll/${noMongo}/eintraege`)
+    let result=await supertestWithAuth(app).get(`/api/protokoll/${noMongo}/eintraege`)
     expect(result).toHaveValidationErrorsExactly({ status: "400",params:"id" })
 })
 test("protokoll patient kein string POST validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let johnProtokoll={
         patient:1234,
         datum: dateToString(new Date()),
@@ -104,10 +113,11 @@ test("protokoll patient kein string POST validation ",async () => {
         updatedAt:dateToString(new Date()),
         gesamtMenge:0}
 
-        let result=await supertest(app).post(`/api/protokoll/`).send(johnProtokoll)
+        let result=await supertestWithAuth(app).post(`/api/protokoll/`).send(johnProtokoll)
         expect(result).toHaveValidationErrorsExactly({ status: "400",body:"patient" })
 })
 test("protokoll public kein boolean POST validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
         let johnProtokoll={
             patient:"jojo",
             datum: dateToString(new Date()),
@@ -118,10 +128,11 @@ test("protokoll public kein boolean POST validation ",async () => {
             updatedAt:dateToString(new Date()),
             gesamtMenge:0}
     
-            let result=await supertest(app).post(`/api/protokoll/`).send(johnProtokoll)
+            let result=await supertestWithAuth(app).post(`/api/protokoll/`).send(johnProtokoll)
             expect(result).toHaveValidationErrorsExactly({ status: "400",body:"public" })
 })
 test("protokoll closed kein boolean POST validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let johnProtokoll={
         patient:"jojo",
         datum: dateToString(new Date()),
@@ -132,10 +143,11 @@ test("protokoll closed kein boolean POST validation ",async () => {
         updatedAt:dateToString(new Date()),
         gesamtMenge:0}
 
-        let result=await supertest(app).post(`/api/protokoll/`).send(johnProtokoll)
+        let result=await supertestWithAuth(app).post(`/api/protokoll/`).send(johnProtokoll)
         expect(result).toHaveValidationErrorsExactly({ status: "400",body:"closed" })
 })
 test("protokoll kein mongoId POST validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let johnProtokoll={
         patient:"jojo",
         datum: dateToString(new Date()),
@@ -146,12 +158,13 @@ test("protokoll kein mongoId POST validation ",async () => {
         updatedAt:dateToString(new Date()),
         gesamtMenge:0}
 
-        let result=await supertest(app).post(`/api/protokoll/`).send(johnProtokoll)
+        let result=await supertestWithAuth(app).post(`/api/protokoll/`).send(johnProtokoll)
         expect(result).toHaveValidationErrorsExactly({ status: "400",body:"ersteller" })
 })
 
 test("protokoll patient kein string PUT validation ",async () => {
+    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     let noMongo=12334
-    let result=await supertest(app).delete(`/api/eintrag/${noMongo}`)
+    let result=await supertestWithAuth(app).delete(`/api/eintrag/${noMongo}`)
     expect(result).toHaveValidationErrorsExactly({ status: "400",params:"id" })
    })
