@@ -17,7 +17,7 @@ let eintragLevent :HydratedDocument<IEintrag>
 let eintragAhmad:HydratedDocument<IEintrag>
 beforeEach(async () => {
     pflegerLevent= await Pfleger.create({name:"Levent",password:"HalloWelt123!",admin:true})
-    pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123!dae3",admin:true})
+    pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123!dae3",admin:false})
     pflegerHanz= await Pfleger.create({name:"Hanz",password:"Welt123!ddf2f",admin:true})
     await pflegerLevent.save()
     await pflegerAhmad.save()
@@ -331,3 +331,28 @@ test("Eintrag erstellen POST ",async()=>{
     expect(result.statusCode).toBe(403)
 })
 
+test("getEintrag GET",async ()=>{
+    await performAuthentication("Levent", "HalloWelt123!");
+
+    let protkollLevo = await Protokoll.create({
+        patient: "levent",
+        datum: new Date(),
+        public: false,
+        closed: false,
+        ersteller: pflegerHanz.id,
+        erstellerName: pflegerLevent.name,
+        updatedAt: new Date(),
+        gesamtMenge: 0
+    })
+    let eintragAhmads = await Eintrag.create({
+        getraenk:"Cola",
+        menge:200,
+        kommentar:"Zu wenig wasser",
+        ersteller:pflegerHanz.id,
+        erstellerName:pflegerLevent.name,
+        protokoll:protkollLevo.id
+    })
+
+    let result=await supertestWithAuth(app).get(`/api/eintrag/${eintragAhmads.id}`);
+    expect(result.statusCode).toBe(403)
+})

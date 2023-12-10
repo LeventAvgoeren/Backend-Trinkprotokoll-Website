@@ -25,7 +25,7 @@ protokollRouter.get("/:id/eintraege", optionalAuthentication,param("id").isMongo
     }
 })
 
-protokollRouter.get("/alle",optionalAuthentication, async (req, res, next) => {
+protokollRouter.get("/alle", async (req, res, next) => {
     try {
         let protkoll = await getAlleProtokolle();
         res.status(200).send(protkoll);
@@ -44,11 +44,18 @@ protokollRouter.get("/:id",optionalAuthentication, param("id").isMongoId(), asyn
     }
 
     try {
-        let protokoll = await getProtokoll(id);
-        if(protokoll.public===false && protokoll.ersteller!==req.pflegerId){
-            res.sendStatus(401).send("dieses protokoll ist nicht öffentlich")
+        let protokoll = await getProtokoll(id)
+        if(protokoll.public===true){
+            res.status(200).send(protokoll);
         }
-        res.status(200).send(protokoll); // 200->OK
+        if(protokoll.public===false && protokoll.ersteller!==req.pflegerId){
+            res.sendStatus(401)
+            next()
+        }
+        else{
+            //Gleiche Id und private
+            res.status(200).send(protokoll)
+        }
     } catch (err) {
         res.status(400); //Resource gibt es nicht
         next(err);
@@ -69,13 +76,17 @@ protokollRouter.post("/",requiresAuthentication,
         if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })
         }
+        if(req.pflegerId!==req.body.ersteller){
+            return res.status(400).send("pflegerId nicht konsitent");
+        }
+        
         try {
             let protokoll = matchedData(req) as ProtokollResource
             let erstelltesProtokoll = await createProtokoll(protokoll)
             res.status(201).send(erstelltesProtokoll)
         }
         catch (err) {
-            res.status(400)
+            res.status(404)
             next(err)
         }
 
@@ -117,7 +128,7 @@ protokollRouter.put("/:id",requiresAuthentication,
             }
         ];
         if(id!==body){
-            res.sendStatus(400).json({errors})
+            res.status(400).json({errors})
         }
         //Aufgabe:Ein Protokoll darf nur vom Ersteller geupdatet werden
         if (erstellerID!== req.pflegerId) {

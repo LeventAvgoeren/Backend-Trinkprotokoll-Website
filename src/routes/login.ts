@@ -22,7 +22,7 @@ loginRouter.post("/",
             let log = matchedData(req) 
             let createJWT = await verifyPasswordAndCreateJWT(log.name,log.password)
             //Vom professor hilfe bekommen wegen exp
-            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none",expires:log.exp+300})
+            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none",expires:new Date(Date.now()+300)})
             res.sendStatus(201).send(createJWT)
         }
         catch (err) {
@@ -53,5 +53,6 @@ loginRouter.delete("/", async (req, res,next) => {
         //const jwtString = req.cookies.access_token;
         res.clearCookie('access_token')
         res.sendStatus(204)
+        next()
     
 })

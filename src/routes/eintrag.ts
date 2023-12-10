@@ -24,6 +24,7 @@ eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (
         }
         else{
             res.sendStatus(403)
+            next()
         }
     } catch (err) {
         res.status(400); //Resource gibt es nicht
@@ -55,6 +56,7 @@ eintragRouter.post("/",requiresAuthentication,
             }
             else{
                 res.sendStatus(403)
+                next()
             }
         }
         catch (err) {
@@ -80,8 +82,6 @@ eintragRouter.put("/:id",requiresAuthentication,
         }
         const id = req.params!.id;
         let body = req.body.id 
-        let ersteller=req.body.ersteller
-        let a=req.pflegerId
         const errors = [
             {
                 msg: "params id und body id ungleich",
@@ -137,6 +137,7 @@ eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
         }
         else{
             res.sendStatus(403)
+            next()
         }
     }
     catch (err) {

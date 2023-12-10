@@ -27,6 +27,7 @@ test("verifyPasswordAndCreateJWT loign fehlgeschlagen",async ()=>{
 test("verifyPasswordAndCreateJWT variablen nicht gesetzt ",async ()=>{
     process.env.JWT_SECRET = "";
 await expect(verifyPasswordAndCreateJWT("Levent","LEVENThallo123!")).rejects.toThrow("variablen nicht gesetzt")
+process.env.JWT_SECRET = "LeventsGeheimnis";
 })
 
 

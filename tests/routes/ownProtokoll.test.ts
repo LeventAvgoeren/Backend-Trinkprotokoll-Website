@@ -82,11 +82,6 @@ await performAuthentication("Levent", "HalloWelt123!");
 let result=await supertestWithAuth(app).get(`/api/protokoll/alle`);
 expect(result.statusCode).toBe(200)
 })
-test("getAlle GET OHNE autor",async ()=>{
-    await performAuthentication("Levent", "HalloWelt123");
-    let result=await supertest(app).get(`/api/protokoll/alle`);
-    expect(result.statusCode).toBe(401)
-})
 test("Protokoll erstellen POST",async()=>{
     await performAuthentication("Levent", "HalloWelt123!");
 

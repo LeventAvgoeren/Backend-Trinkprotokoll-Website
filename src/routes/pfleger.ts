@@ -82,11 +82,7 @@ pflegerRouter.put("/:id",requiresAuthentication,
         ];
         //Body und params nicht die selbe
         if(id!==body){
-            res.sendStatus(400).json({errors})
-        }
-        //TODO: Noch mal angucken
-        if (id !== req.pflegerId) {
-            return res.status(400).send("inkonsitente ids")
+            res.status(400).json({errors})
         }
     
         try {

@@ -33,9 +33,7 @@ test("/api/protokoll GET, ungültige ID", async () => {
     expect(response).toHaveValidationErrorsExactly({ status: "400", params: "id" })
 })
 test("/api/protokoll PUT, verschiedene ID (params und body)", async () => {
-    await performAuthentication("Poppy Pomfrey", "12345bcdABCD..;,.");
     const testee = supertestWithAuth(app);
-    
     // Hint: Gültige ID, aber für ein Protokoll ungültig!
     const invalidProtokollID = pomfrey.id;
     // Hint: Gebe hier Typ an, um im Objektliteral Fehler zu vermeiden!
