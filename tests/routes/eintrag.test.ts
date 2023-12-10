@@ -10,6 +10,7 @@ import { performAuthentication, supertestWithAuth } from "../supertestWithAuth";
 
 let pflegerLevent: HydratedDocument<IPfleger>
 let pflegerAhmad: HydratedDocument<IPfleger>
+let pflegerHanz: HydratedDocument<IPfleger>
 let protkollLevent: HydratedDocument<IProtokoll>
 let protkollAhmad: HydratedDocument<IProtokoll>
 let eintragLevent :HydratedDocument<IEintrag>
@@ -17,6 +18,7 @@ let eintragAhmad:HydratedDocument<IEintrag>
 beforeEach(async () => {
     pflegerLevent= await Pfleger.create({name:"Levent",password:"HalloWelt123!",admin:true})
     pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123!dae3",admin:true})
+    pflegerHanz= await Pfleger.create({name:"Hanz",password:"Welt123!ddf2f",admin:true})
     await pflegerLevent.save()
     await pflegerAhmad.save()
     protkollLevent = await Protokoll.create({
@@ -81,8 +83,8 @@ test("getEintrag GET",async ()=>{
 
     let result=await supertestWithAuth(app).get(`/api/eintrag/${eintragLevent.id}`);
     expect(result.statusCode).toBe(200)
-    expect(result.body.erstellerName).toBe(pflegerLevent.name)
     expect(result.body.protokoll).toBe(protkollLevent.id)
+    expect(result.body.erstellerName).toBe(pflegerLevent.name)
 })
 test("getEintrag GET OHNE autorisierung",async ()=>{
     await performAuthentication("Levent", "HalloWelt123");
@@ -301,7 +303,7 @@ test(" Eintrag DELETE",async () => {
 //1)nur der ersteller des protokolls kann löschen 
 //2)Wenn jmd anderes der ersteller des eintrages ist kann er auch löschen 
 test("Eintrag updaten PUT", async () => {
-    await performAuthentication("Ahmad", "Welt123!dae3");
+    await performAuthentication("Ahmad","Welt123!dae3")
 
     let updatetEintrag: EintragResource = {  
         id: eintragLevent.id,
@@ -316,3 +318,16 @@ test("Eintrag updaten PUT", async () => {
     let result = await supertestWithAuth(app).put(`/api/eintrag/${eintragLevent.id}`).send(updatetEintrag); 
     expect(result.statusCode).toBe(403)
 });
+
+test("Eintrag erstellen POST ",async()=>{
+    await performAuthentication("Ahmad","Welt123!dae3")
+    let fakeid=new Types.ObjectId().toString()
+    let johnEintrag:EintragResource={  
+    getraenk:"Wein",
+    menge:200,
+    ersteller:fakeid,
+    protokoll:protkollLevent.id}
+    let result=await supertestWithAuth(app).post(`/api/eintrag`).send(johnEintrag)
+    expect(result.statusCode).toBe(403)
+})
+

@@ -16,14 +16,11 @@ eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (
     try {
         //Wenn protokoll public dann darf man es sehen 
         //Wenn es private ist dann kann es nur der erzeuger sehen 
-
-        let eintrag = await getEintrag(id);
-        let protkoll=await getProtokoll(eintrag.protokoll)
-        if(protkoll.public===true){
+        let eintrag = await getEintrag(id) 
+        let proto= eintrag.protokoll
+        let protkoll= await getProtokoll(proto)
+        if((!protkoll.public && (eintrag.ersteller===req.pflegerId||protkoll.ersteller===req.pflegerId))||(protkoll.public===true)){
             res.status(200).send(eintrag);
-        }
-        else if(!protkoll.public && (eintrag.ersteller===req.pflegerId||protkoll.ersteller===req.pflegerId)){
-            res.sendStatus(200).send(eintrag);
         }
         else{
             res.sendStatus(403)
@@ -79,11 +76,12 @@ eintragRouter.put("/:id",requiresAuthentication,
     , async (req, res, next) => {
         let error=validationResult(req)
         if (!error.isEmpty()) {
-            res.status(400).json({ errors: error.array() })
+            return res.status(400).json({ errors: error.array() })
         }
         const id = req.params!.id;
         let body = req.body.id 
         let ersteller=req.body.ersteller
+        let a=req.pflegerId
         const errors = [
             {
                 msg: "params id und body id ungleich",
@@ -99,21 +97,20 @@ eintragRouter.put("/:id",requiresAuthentication,
             }
         ];
         if(id!==body){
-            res.sendStatus(400).json({errors})
-        }
-        if (ersteller!== req.pflegerId) {
-            return res.status(400).send("Inkonsitente ids")
+           return res.sendStatus(400).json({errors})
         }
         try {
             let eintrage=await getEintrag(id)
             let protokoll=await getProtokoll(eintrage.protokoll)
-            if(req.pflegerId===(eintrage.ersteller||protokoll.ersteller)){
+            //if(req.pflegerId===(eintrage.ersteller||protokoll.ersteller))
+            if (req.pflegerId === eintrage.ersteller || req.pflegerId === protokoll.ersteller){
                 let eintrag = matchedData(req) as EintragResource
                 let updatet = await updateEintrag(eintrag)
                 res.status(200).send(updatet)
             }
             else{
                 res.sendStatus(403)
+                next()
             }
 
         }
@@ -134,7 +131,7 @@ eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
         //if(eintrag.ersteller === protokoll.ersteller(pflegerId)||eintrag.ersteller===eintrag.ersteller)
         let protokoll=await getProtokoll(eintrag.protokoll)
         //Rollenspiel siehe screenshot
-        if(req.pflegerId===(eintrag.ersteller||protokoll.ersteller)){
+        if (req.pflegerId === eintrag.ersteller || req.pflegerId === protokoll.ersteller) {
             let deleted = await deleteEintrag(id)
             res.status(204).send(deleted) //Keine rückmeldung
         }
