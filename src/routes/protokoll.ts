@@ -5,10 +5,11 @@ import { ProtokollResource } from "../Resources";
 import { Types } from "mongoose";
 import { body, matchedData, param, validationResult } from "express-validator";
 import { optionalAuthentication, requiresAuthentication } from "./authentication";
+import { Protokoll } from "../model/ProtokollModel";
 
 
 export const protokollRouter = express.Router();
-//TODO:VALIDIEREN
+
 protokollRouter.get("/:id/eintraege", optionalAuthentication,param("id").isMongoId(), async (req, res, next) => {
     let error = validationResult(req)
     if (!error.isEmpty()) {
@@ -44,13 +45,16 @@ protokollRouter.get("/:id",optionalAuthentication, param("id").isMongoId(), asyn
 
     try {
         let protokoll = await getProtokoll(id);
+        if(protokoll.public===false && protokoll.ersteller!==req.pflegerId){
+            res.sendStatus(401).send("dieses protokoll ist nicht öffentlich")
+        }
         res.status(200).send(protokoll); // 200->OK
     } catch (err) {
         res.status(400); //Resource gibt es nicht
         next(err);
     }
 })
-//TODO:VALIDIEREN
+
 protokollRouter.post("/",requiresAuthentication,
     body("patient").isString().isLength({ min: 1, max: 100 }),
     body("public").optional().isBoolean(),
@@ -77,7 +81,6 @@ protokollRouter.post("/",requiresAuthentication,
 
     })
 
-//TODO:VALIDIEREN
 protokollRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
     param("id").isMongoId(),
@@ -97,8 +100,7 @@ protokollRouter.put("/:id",requiresAuthentication,
         }
 
         let id = req.params!.id;
-        let body = req.body.id as ProtokollResource
-        let verId=req.pflegerId
+        let body = req.body.id 
         let erstellerID=req.body.ersteller
         const errors = [
             {
@@ -114,9 +116,12 @@ protokollRouter.put("/:id",requiresAuthentication,
                 value: body
             }
         ];
-
-        if (erstellerID!== verId) {
-            return res.status(400).json({ errors });
+        if(id!==body){
+            res.sendStatus(400).json({errors})
+        }
+        //Aufgabe:Ein Protokoll darf nur vom Ersteller geupdatet werden
+        if (erstellerID!== req.pflegerId) {
+            return res.status(403).send("du darfst dich nur selber updaten");
         }
 
         try {
@@ -138,7 +143,13 @@ protokollRouter.delete("/:id",requiresAuthentication, param("id").isMongoId(), a
     if (!error.isEmpty()) {
         res.status(400).json({ errors: error.array() })
     }
+    //Aufgabe:Ein Protokoll darf nur vom Ersteller gelöscht werden
     try {
+        //protokoll suchen und ersteller raus holen um ihn zu vergelichen weil er sich nur selber löschend darf
+        let protokoll=await getProtokoll(id)
+        if(protokoll.ersteller!==req.pflegerId){
+            return res.sendStatus(403).send("Du darfst nur eigene protokolle löschen")
+        }
         let status = await deleteProtokoll(id)
         res.status(204).send(status) //Keine rückmeldung
     }

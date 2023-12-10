@@ -23,7 +23,6 @@ pflegerRouter.get("/alle", optionalAuthentication,async (req, res, next) => {
     }
 })
 
-//TODO:VALIDIEREN
 pflegerRouter.post("/",requiresAuthentication,
     body("name").isString().isLength({ min: 1, max: 100 }),
     body("admin").optional().isBoolean(),
@@ -50,7 +49,6 @@ pflegerRouter.post("/",requiresAuthentication,
         }
     })
     
-//TODO:VALIDIEREN
 pflegerRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
     param("id").isMongoId(),
@@ -67,7 +65,7 @@ pflegerRouter.put("/:id",requiresAuthentication,
             res.send(401)
         }
         const id = req.params!.id;
-        let body = req.body.id as PflegerResource
+        let body = req.body.id 
         const errors = [
             {
                 msg: "params id ungleich zu body id",
@@ -82,8 +80,13 @@ pflegerRouter.put("/:id",requiresAuthentication,
                 value: body
             }
         ];
+        //Body und params nicht die selbe
+        if(id!==body){
+            res.sendStatus(400).json({errors})
+        }
+        //TODO: Noch mal angucken
         if (id !== req.pflegerId) {
-            return res.status(400).json({ errors });
+            return res.status(400).send("inkonsitente ids")
         }
     
         try {
@@ -99,6 +102,7 @@ pflegerRouter.put("/:id",requiresAuthentication,
     })
 
 pflegerRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), async (req, res, next) => {
+    //Selber löschen darf nicht passieren wenn admin
     let id = req.params!.id
     let error= validationResult(req)
     if (!error.isEmpty()) {
@@ -109,6 +113,9 @@ pflegerRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
         res.send(401)
     }
     try {
+        if(id===req.pflegerId){
+            res.sendStatus(403).send("du darfst dich nicht selber löschen")
+        }
         let status = await deletePfleger(id)
         res.status(204).send(status)
     }

@@ -3,6 +3,7 @@ import { createEintrag, deleteEintrag, getAlleEintraege, getEintrag, updateEintr
 import { EintragResource } from "../Resources";
 import { body, matchedData, param, validationResult } from "express-validator";
 import { optionalAuthentication, requiresAuthentication } from "./authentication";
+import { getProtokoll } from "../services/ProtokollService";
 
 export const eintragRouter = express.Router();
 
@@ -61,7 +62,8 @@ eintragRouter.put("/:id",requiresAuthentication,
             res.status(400).json({ errors: error.array() })
         }
         const id = req.params!.id;
-        let body = req.body.id as EintragResource
+        let body = req.body.id 
+        let ersteller=req.body.ersteller
         const errors = [
             {
                 msg: "params id und body id ungleich",
@@ -76,8 +78,11 @@ eintragRouter.put("/:id",requiresAuthentication,
                 value: body
             }
         ];
-        if (id !== req.pflegerId) {
-            return res.status(400).json({ errors });
+        if(id!==body){
+            res.sendStatus(400).json({errors})
+        }
+        if (ersteller!== req.pflegerId) {
+            return res.status(400).send("Inkonsitente ids")
         }
         try {
             let eintrag = matchedData(req) as EintragResource
@@ -92,12 +97,21 @@ eintragRouter.put("/:id",requiresAuthentication,
     })
     
 eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), async (req, res, next) => {
+    // //Ein Eintrag darf nur vom Ersteller des Protokolls (in dem der Eintrag ist) oder 
+    // (falls davon abweichend) dem Ersteller des Eintrags selbst verändert oder 
+    // gelöscht werden. 
     let id = req.params!.id
      let error=validationResult(req)
         if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })//testen
         }
     try {
+        let eintrag=await getEintrag(id)
+        //if(eintrag.ersteller === protokoll.ersteller(pflegerId)||eintrag.ersteller===eintrag.ersteller)
+        let protokoll=await getProtokoll(eintrag.protokoll)
+        if(eintrag.ersteller!==protokoll.ersteller||eintrag.ersteller!==req.pflegerId){
+            res.sendStatus(401)
+        }
         let deleted = await deleteEintrag(id)
         res.status(204).send(deleted) //Keine rückmeldung
     }

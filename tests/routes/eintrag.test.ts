@@ -219,3 +219,28 @@ test("updateEintrag mit unterschiedlich  PUT",async ()=>{
         expect(result.statusCode).toBe(400)
 })
 
+// test(" Eintrag DELETE",async () => {
+//     await performAuthentication("Levent", "HalloWelt123!");
+//     let eintragLevo = await Eintrag.create({
+//         getraenk:"Cola",
+//         menge:200,
+//         kommentar:"Zu wenig wasser",
+//         ersteller:protkollLevent.ersteller,
+//         erstellerName:pflegerLevent.name,
+//         protokoll:protkollLevent.id
+//     })
+//     let protkollLevo = await Protokoll.create({
+//         patient: "levent",
+//         datum: new Date(),
+//         public: false,
+//         closed: false,
+//         ersteller: pflegerAhmad.id,
+//         erstellerName: pflegerLevent.name,
+//         updatedAt: new Date(),
+//         gesamtMenge: 0
+//     })
+
+    
+//     let result= await supertestWithAuth(app).delete(`/api/eintrag/${eintragLevo.id}`)
+//     expect(result.statusCode).toBe(401)
+// })

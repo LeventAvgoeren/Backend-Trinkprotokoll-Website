@@ -45,6 +45,7 @@ export function optionalAuthentication(req: Request, res: Response, next: NextFu
                 res.sendStatus(401)
             }
             req.pflegerId=pfleger.id
+            req.role=pfleger.role
         }
         next();
     }

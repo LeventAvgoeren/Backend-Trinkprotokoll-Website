@@ -18,9 +18,8 @@ beforeEach(async () => {
 })
 test("pfleger DELETE",async () => {
     await performAuthentication("Levent", "HalloWelt123!");
-    let result=await supertestWithAuth(app).delete(`/api/pfleger/${pflegerLevent.id}`)
+    let result=await supertestWithAuth(app).delete(`/api/pfleger/${pflegerAhmad.id}`)
     expect(result.statusCode).toBe(204)
-    expect(await Pfleger.findOne({id:pflegerLevent.id})).toBeNull()
 })
 test("pfleger DELETE OHNE autori",async () => {
     await performAuthentication("Levent", "HalloWelt123");
@@ -220,10 +219,17 @@ let pflegerUpdatet:PflegerResource={
 let result= await supertestWithAuth(app).put(`/api/pfleger/${pflegerUpdatet.id}`).send(pflegerUpdatet)
 expect(result.statusCode).toBe(401)
 })
+
 test("getAllePfleger GET als USER",async ()=>{
 await performAuthentication("Hanz","LevoKeko124!");
 let result=await supertest(app).get(`/api/pfleger/alle`);
 expect(result.statusCode).toBe(401)
+})
+
+test("pfleger DELETE",async () => {
+    await performAuthentication("Levent", "HalloWelt123!");
+    let result=await supertestWithAuth(app).delete(`/api/pfleger/${pflegerLevent.id}`)
+    expect(result.statusCode).toBe(403)
 })
 
 

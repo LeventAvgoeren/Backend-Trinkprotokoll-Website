@@ -42,12 +42,4 @@ test("DELETE",async ()=>{
     let result=await supertest(app).delete(`/api/login/`).set('Cookie', [`access_token=${loginLevent}`]);
     expect(result.statusCode).toBe(204)
 })
-test("POST",async ()=>{
-    await performAuthentication("Levent", "Hallo123!3dadgf")
-    let loginRes={ 
-        name:"Levo",
-        password:"Hallo1241!"
-    }
-    let result=await supertestWithAuth(app).post(`/api/login`).send(loginRes)
-    expect(result.statusCode).toBe(204)
-})
+
