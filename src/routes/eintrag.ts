@@ -14,8 +14,20 @@ eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (
         res.status(400).json({ errors: error.array() })//testen
     }
     try {
+        //Wenn protokoll public dann darf man es sehen 
+        //Wenn es private ist dann kann es nur der erzeuger sehen 
+
         let eintrag = await getEintrag(id);
-        res.status(200).send(eintrag); // 200->OK
+        let protkoll=await getProtokoll(eintrag.protokoll)
+        if(protkoll.public===true){
+            res.status(200).send(eintrag);
+        }
+        else if(!protkoll.public && (eintrag.ersteller===req.pflegerId||protkoll.ersteller===req.pflegerId)){
+            res.sendStatus(200).send(eintrag);
+        }
+        else{
+            res.sendStatus(403)
+        }
     } catch (err) {
         res.status(400); //Resource gibt es nicht
         next(err);
@@ -35,16 +47,24 @@ eintragRouter.post("/",requiresAuthentication,
         if (!error.isEmpty()) {
             res.status(400).json({ errors: error.array() })
         }
+
         try {
-            let eintrag = matchedData(req) as EintragResource
-            let erstellterEintrag = await createEintrag(eintrag)
-            res.status(201).send(erstellterEintrag) //201 Created
+            //if req.pflegerId ersteller des Eintrags ist oder das protokol public ist 
+            let protokoll=await getProtokoll(req.body.protokoll)
+            if(req.pflegerId===protokoll.ersteller||protokoll.public===true){
+                let eintrag = matchedData(req) as EintragResource
+                let erstellterEintrag = await createEintrag(eintrag)
+                res.status(201).send(erstellterEintrag) //201 Created
+            }
+            else{
+                res.sendStatus(403)
+            }
         }
         catch (err) {
             res.status(400) //Anfrage ist fehlerhaft
             next(err)
         }
-    })
+})
 
 eintragRouter.put("/:id",requiresAuthentication,
     body("id").isMongoId(),
@@ -85,9 +105,16 @@ eintragRouter.put("/:id",requiresAuthentication,
             return res.status(400).send("Inkonsitente ids")
         }
         try {
-            let eintrag = matchedData(req) as EintragResource
-            let updatet = await updateEintrag(eintrag)
-            res.status(200).send(updatet)
+            let eintrage=await getEintrag(id)
+            let protokoll=await getProtokoll(eintrage.protokoll)
+            if(req.pflegerId===(eintrage.ersteller||protokoll.ersteller)){
+                let eintrag = matchedData(req) as EintragResource
+                let updatet = await updateEintrag(eintrag)
+                res.status(200).send(updatet)
+            }
+            else{
+                res.sendStatus(403)
+            }
 
         }
         catch (err) {
@@ -97,9 +124,6 @@ eintragRouter.put("/:id",requiresAuthentication,
     })
     
 eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), async (req, res, next) => {
-    // //Ein Eintrag darf nur vom Ersteller des Protokolls (in dem der Eintrag ist) oder 
-    // (falls davon abweichend) dem Ersteller des Eintrags selbst verändert oder 
-    // gelöscht werden. 
     let id = req.params!.id
      let error=validationResult(req)
         if (!error.isEmpty()) {
@@ -109,11 +133,14 @@ eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
         let eintrag=await getEintrag(id)
         //if(eintrag.ersteller === protokoll.ersteller(pflegerId)||eintrag.ersteller===eintrag.ersteller)
         let protokoll=await getProtokoll(eintrag.protokoll)
-        if(eintrag.ersteller!==protokoll.ersteller||eintrag.ersteller!==req.pflegerId){
-            res.sendStatus(401)
+        //Rollenspiel siehe screenshot
+        if(req.pflegerId===(eintrag.ersteller||protokoll.ersteller)){
+            let deleted = await deleteEintrag(id)
+            res.status(204).send(deleted) //Keine rückmeldung
         }
-        let deleted = await deleteEintrag(id)
-        res.status(204).send(deleted) //Keine rückmeldung
+        else{
+            res.sendStatus(403)
+        }
     }
     catch (err) {
         res.status(400).send(err)

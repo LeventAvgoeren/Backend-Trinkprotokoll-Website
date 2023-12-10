@@ -16,7 +16,7 @@ let eintragLevent :HydratedDocument<IEintrag>
 let eintragAhmad:HydratedDocument<IEintrag>
 beforeEach(async () => {
     pflegerLevent= await Pfleger.create({name:"Levent",password:"HalloWelt123!",admin:true})
-    pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123",admin:true})
+    pflegerAhmad= await Pfleger.create({name:"Ahmad",password:"Welt123!dae3",admin:true})
     await pflegerLevent.save()
     await pflegerAhmad.save()
     protkollLevent = await Protokoll.create({
@@ -219,28 +219,100 @@ test("updateEintrag mit unterschiedlich  PUT",async ()=>{
         expect(result.statusCode).toBe(400)
 })
 
-// test(" Eintrag DELETE",async () => {
-//     await performAuthentication("Levent", "HalloWelt123!");
-//     let eintragLevo = await Eintrag.create({
-//         getraenk:"Cola",
-//         menge:200,
-//         kommentar:"Zu wenig wasser",
-//         ersteller:protkollLevent.ersteller,
-//         erstellerName:pflegerLevent.name,
-//         protokoll:protkollLevent.id
-//     })
-//     let protkollLevo = await Protokoll.create({
-//         patient: "levent",
-//         datum: new Date(),
-//         public: false,
-//         closed: false,
-//         ersteller: pflegerAhmad.id,
-//         erstellerName: pflegerLevent.name,
-//         updatedAt: new Date(),
-//         gesamtMenge: 0
-//     })
+// //Ein Eintrag darf nur vom Ersteller des Protokolls (in dem der Eintrag ist) oder 
+    // (falls davon abweichend) dem Ersteller des Eintrags selbst verändert oder 
+    // gelöscht werden. 
+test(" Eintrag DELETE",async () => {
+    await performAuthentication("Levent", "HalloWelt123!");
+  
+    let protkollLevo = await Protokoll.create({
+        patient: "levent",
+        datum: new Date(),
+        public: false,
+        closed: false,
+        //ersteller des protokolls
+        ersteller: pflegerAhmad.id,
+        erstellerName: pflegerLevent.name,
+        updatedAt: new Date(),
+        gesamtMenge: 0
+    })
+    let eintragLevo = await Eintrag.create({
+        getraenk:"Cola",
+        menge:200,
+        kommentar:"Zu wenig wasser",
+        ersteller:protkollLevo.ersteller,
+        erstellerName:pflegerLevent.name,
+        protokoll:protkollLevo.id
+    })
+    let result= await supertestWithAuth(app).delete(`/api/eintrag/${eintragLevo.id}`)
+    expect(result.statusCode).toBe(403)
+})
 
-    
-//     let result= await supertestWithAuth(app).delete(`/api/eintrag/${eintragLevo.id}`)
-//     expect(result.statusCode).toBe(401)
-// })
+test(" Eintrag DELETE",async () => {
+    await performAuthentication("Ahmad", "Welt123!dae3");
+  
+    let protkollLevo = await Protokoll.create({
+        patient: "levent",
+        datum: new Date(),
+        public: false,
+        closed: false,
+        //ersteller des protokolls
+        ersteller: pflegerLevent.id,
+        erstellerName: pflegerLevent.name,
+        updatedAt: new Date(),
+        gesamtMenge: 0
+    })
+    let eintragLevo = await Eintrag.create({
+        getraenk:"Cola",
+        menge:200,
+        kommentar:"Zu wenig wasser",
+        ersteller:protkollAhmad.ersteller,
+        erstellerName:pflegerLevent.name,
+        protokoll:protkollLevo.id
+    })
+    let result= await supertestWithAuth(app).delete(`/api/eintrag/${eintragLevo.id}`)
+    expect(result.statusCode).toBe(204)
+})
+test(" Eintrag DELETE",async () => {
+    await performAuthentication("Ahmad", "Welt123!dae3");
+  
+    let protkollLevo = await Protokoll.create({
+        patient: "levent",
+        datum: new Date(),
+        public: false,
+        closed: false,
+        //ersteller des protokolls
+        ersteller: pflegerAhmad.id,
+        erstellerName: pflegerLevent.name,
+        updatedAt: new Date(),
+        gesamtMenge: 0
+    })
+    let eintragLevo = await Eintrag.create({
+        getraenk:"Cola",
+        menge:200,
+        kommentar:"Zu wenig wasser",
+        ersteller:pflegerLevent.id,
+        erstellerName:pflegerLevent.name,
+        protokoll:protkollLevent.id
+    })
+    let result= await supertestWithAuth(app).delete(`/api/eintrag/${eintragLevo.id}`)
+    expect(result.statusCode).toBe(403)
+})
+//1)nur der ersteller des protokolls kann löschen 
+//2)Wenn jmd anderes der ersteller des eintrages ist kann er auch löschen 
+test("Eintrag updaten PUT", async () => {
+    await performAuthentication("Ahmad", "Welt123!dae3");
+
+    let updatetEintrag: EintragResource = {  
+        id: eintragLevent.id,
+        getraenk: "Fanta",
+        menge: 300,
+        kommentar: "Mehr trinken",
+        ersteller: pflegerLevent.id,
+        erstellerName: pflegerLevent.name,
+        protokoll: protkollLevent.id
+    };
+
+    let result = await supertestWithAuth(app).put(`/api/eintrag/${eintragLevent.id}`).send(updatetEintrag); 
+    expect(result.statusCode).toBe(403)
+});
