@@ -11,6 +11,7 @@ import { Protokoll } from "../model/ProtokollModel";
 export const protokollRouter = express.Router();
 
 protokollRouter.get("/:id/eintraege", optionalAuthentication,param("id").isMongoId(), async (req, res, next) => {
+    //TODO:
     let error = validationResult(req)
     if (!error.isEmpty()) {
         res.status(400).json({ errors: error.array() })
@@ -23,15 +24,17 @@ protokollRouter.get("/:id/eintraege", optionalAuthentication,param("id").isMongo
         res.status(404); // not found
         next(err);
     }
+    
 })
 
-protokollRouter.get("/alle", async (req, res, next) => {
+protokollRouter.get("/alle",optionalAuthentication, async (req, res, next) => {
+    
     try {
-        let protkoll = await getAlleProtokolle();
-        res.status(200).send(protkoll);
+        let protkollListe = await getAlleProtokolle(req.pflegerId);
+        res.status(200).send(protkollListe)
     }
     catch (err) {
-        res.status(400)
+        res.sendStatus(400)
     }
 })
 
@@ -49,7 +52,7 @@ protokollRouter.get("/:id",optionalAuthentication, param("id").isMongoId(), asyn
             res.status(200).send(protokoll);
         }
         if(protokoll.public===false && protokoll.ersteller!==req.pflegerId){
-            res.sendStatus(401)
+            res.sendStatus(403)
             next()
         }
         else{
@@ -57,7 +60,7 @@ protokollRouter.get("/:id",optionalAuthentication, param("id").isMongoId(), asyn
             res.status(200).send(protokoll)
         }
     } catch (err) {
-        res.status(400); //Resource gibt es nicht
+        res.status(404); //Resource gibt es nicht
         next(err);
     }
 })
@@ -165,7 +168,7 @@ protokollRouter.delete("/:id",requiresAuthentication, param("id").isMongoId(), a
         res.status(204).send(status) //Keine rückmeldung
     }
     catch (err) {
-        res.status(400)
+        res.status(404)
         next(err)
     }
 })

@@ -11,50 +11,42 @@ import { Eintrag } from "../model/EintragModel";
  * - alle eigenen Protokolls, dies ist natürlich nur möglich, wenn die pflegerId angegeben ist.
  */
 export async function getAlleProtokolle(pflegerId?: string): Promise<ProtokollResource[]> {
-    //const protkoll = await Protokoll.find(or({ersteller: pflegerId},{public: true})).exec();
-   const protokollResources: ProtokollResource[] = [];
-   const protkoll = await Protokoll.find().exec();
+    // public Protokolls
+    let protokolls = await Protokoll.find({ public: true }).exec();
 
-   let pfleger;
+    if (pflegerId) {
+        // private Protokolls
+        const privateProtokolls = await Protokoll.find({ ersteller: pflegerId, public: false }).exec();
 
-   if (pflegerId) {
-       pfleger = await Pfleger.findById(pflegerId).exec();
-       if (!pfleger) {
-           throw Error("Pfleger id nicht gefunden");
-       }
-   }
+        // Combine public & private Protokolls, so there R no duplicates
+        protokolls = [...protokolls, ...privateProtokolls.filter(privateProtokoll =>
+            !protokolls.some(publicProtokoll => publicProtokoll._id.equals(privateProtokoll._id))
+        )];
+    }
 
+    // die gesamtMenge für jedes Protokoll berechnen und es zu ProtokollResource konvertieren
+    const protokollResource = await Promise.all(protokolls.map(async (protokoll) => {
 
+        const eintraege = await Eintrag.find({ protokoll: protokoll._id }).exec();
 
-   let gesamtMenge = 0;
-   if (pfleger) {
-       const eintraege = await Eintrag.find({ ersteller: pfleger.id }).exec();
-       //gesamtMenge = eintraege.reduce((sum, eintrag) => sum + eintrag.menge, 0);
-       for (let index = 0; index < eintraege.length; index++) {
-           const element = eintraege[index];
-           gesamtMenge += element.menge
-       }
-   }
+        const gesamtmenge = eintraege.reduce((sum, eintrag) => sum + eintrag.menge, 0);
 
+        const pflegerbeispiel = await Pfleger.findById(protokoll.ersteller).exec();
 
-   for (let index = 0; index < protkoll.length; index++) {
-       const element = protkoll[index];
+        return {
+            id: protokoll._id.toString(),
+            patient: protokoll.patient,
+            datum: dateToString(protokoll.datum),
+            public: protokoll.public,
+            closed: protokoll.closed,
+            ersteller: protokoll.ersteller.toString(),
+            erstellerName: pflegerbeispiel?.name,
+            gesamtMenge: gesamtmenge,
+            updatedAt: dateToString(protokoll.updatedAt)
+        };
+    }));
 
-       if ((pfleger && element.ersteller.toString() === pflegerId) || element.public === true) {
-           let id = element.id;
-           let patient = element.patient;
-           let datum = dateToString(element.datum);
-           let isPublic = element.public;
-           let closed = element.closed;
-           let ersteller = element.ersteller.toString();
-           let erstellerName = pfleger?.name;
-           let updatedAt = dateToString(element.updatedAt);
-
-           protokollResources.push({ id, patient, datum, public: isPublic, closed, ersteller, erstellerName, updatedAt, gesamtMenge });
-       }
-   }
-
-   return protokollResources;
+    return protokollResource;
 }
 
 

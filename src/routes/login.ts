@@ -21,13 +21,15 @@ loginRouter.post("/",
         try {
             let log = matchedData(req) 
             let createJWT = await verifyPasswordAndCreateJWT(log.name,log.password)
+            let verif=verifyJWT(createJWT)
             //Vom professor hilfe bekommen wegen exp
-            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none",expires:new Date(Date.now()+300)})
-            res.sendStatus(201).send(createJWT)
+            //Hier *1000
+            res.cookie("access_token", createJWT, {httpOnly: true,secure:true,sameSite:"none",expires:new Date(Date.now()+3600000
+            )})
+            res.status(201).send(verif)
         }
         catch (err) {
-            res.sendStatus(400) 
-            next(err)
+            res.sendStatus(401) 
         }
     })
 
@@ -36,23 +38,36 @@ loginRouter.get("/", async (req, res, next) => {
         const jwtString = req.cookies.access_token;
 
         if(!jwtString){
-            res.sendStatus(400).send(false)
+            res.status(200).send(false);
+            return;
         }
         let verifyt=verifyJWT(jwtString)
-        res.sendStatus(200).send(verifyt)
+        res.status(200).send(verifyt)
     }
     catch (err) {
         //nochmal nach gucken 
-        res.clearCookie('access_token')
-        res.sendStatus(400).send(false)
-        next(err)
+        res.clearCookie("access_token",{
+            httpOnly: true,
+            secure: true, 
+            sameSite: 'none',
+            expires: new Date(0)
+        });
+        res.status(200).send(false)
     }
 })
 
 loginRouter.delete("/", async (req, res,next) => {
         //const jwtString = req.cookies.access_token;
-        res.clearCookie('access_token')
+        res.clearCookie("access_token",{
+            httpOnly: true,
+            secure: true, 
+            sameSite: 'none',
+            expires: new Date(0)
+        });        
         res.sendStatus(204)
-        next()
-    
 })
+// loginRouter.delete("/", async (req, res,next) => {
+//     //const jwtString = req.cookies.access_token;
+//     res.clearCookie('access_token')
+//     res.sendStatus(204)
+// })

@@ -133,7 +133,7 @@ test("getEintrag mit fakeid GET",async ()=>{
 
     let fakeid=new Types.ObjectId().toString()
     let result=await supertestWithAuth(app).get(`/api/eintrag/${fakeid}`);
-    expect(result.statusCode).toBe(400)
+    expect(result.statusCode).toBe(404)
 })
 test("updateEintrag mit fakeid PUT",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
@@ -155,7 +155,7 @@ test("eintrag löschen mit fakeid DELETE",async ()=>{
 
     let fakeid=new Types.ObjectId().toString()
     let result=await supertestWithAuth(app).delete(`/api/eintrag/${fakeid}`);
-    expect(result.statusCode).toBe(400)
+    expect(result.statusCode).toBe(404)
 })
 test("Eintrag updaten PUT", async () => {
     await performAuthentication("Levent", "HalloWelt123!");

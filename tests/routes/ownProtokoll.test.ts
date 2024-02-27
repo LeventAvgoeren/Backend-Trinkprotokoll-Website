@@ -129,7 +129,7 @@ test("Protokoll get mit fakeId GET",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
   let fakeid=new Types.ObjectId().toString()
   let result=await supertestWithAuth(app).get(`/api/protokoll/${fakeid}`);
-  expect(result.statusCode).toBe(400)
+  expect(result.statusCode).toBe(404)
 })
 test("Protokoll updaten mit fakeId PUT",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
@@ -144,7 +144,7 @@ test("Protokoll löschen mit fakeId DELTE",async ()=>{
 
     let fakeid=new Types.ObjectId().toString()
     let result=await supertestWithAuth(app).delete(`/api/protokoll/${fakeid}`)
-    expect(result.statusCode).toBe(400)
+    expect(result.statusCode).toBe(404)
 })
 test("Protokoll löschen mit fakeId DELTE",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
@@ -171,7 +171,7 @@ test("Protokoll get Error test GET",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
     let fakeid=new Types.ObjectId().toString()
     let result=await supertestWithAuth(app).get(`/api/protokoll/${fakeid}`);
-    expect(result.statusCode).toBe(400)
+    expect(result.statusCode).toBe(404)
 })
 
 test("Protokoll mit unterschiedlichen id PUT",async ()=>{
@@ -211,5 +211,5 @@ test("Protokoll erstellen Error POST",async ()=>{
 test("get mit id GET",async ()=>{
     await performAuthentication("Levent", "HalloWelt123!");
     let result=await supertestWithAuth(app).get(`/api/protokoll/${protokollNoOffi.id}`);
-    expect(result.statusCode).toBe(401)
+    expect(result.statusCode).toBe(403)
 })

@@ -14,8 +14,6 @@ eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (
         res.status(400).json({ errors: error.array() })//testen
     }
     try {
-        //Wenn protokoll public dann darf man es sehen 
-        //Wenn es private ist dann kann es nur der erzeuger sehen 
         let eintrag = await getEintrag(id) 
         let proto= eintrag.protokoll
         let protkoll= await getProtokoll(proto)
@@ -24,10 +22,9 @@ eintragRouter.get("/:id",optionalAuthentication,param("id").isMongoId(), async (
         }
         else{
             res.sendStatus(403)
-            next()
         }
     } catch (err) {
-        res.status(400); //Resource gibt es nicht
+        res.status(404); //Resource gibt es nicht
         next(err);
     }
 })
@@ -141,7 +138,7 @@ eintragRouter.delete("/:id",requiresAuthentication,param("id").isMongoId(), asyn
         }
     }
     catch (err) {
-        res.status(400).send(err)
+        res.status(404).send(err)
         next(err)
     }
 })
